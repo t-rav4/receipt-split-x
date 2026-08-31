@@ -8,7 +8,7 @@ on:
 jobs:
   lint:
     name: Lint
-    type: generic
+    type: custom
     steps:
       - uses: eas/checkout
 
@@ -20,7 +20,7 @@ jobs:
 
   test:
     name: Tests
-    type: generic
+    type: custom
     steps:
       - uses: eas/checkout
 
@@ -41,7 +41,7 @@ jobs:
       - lint
       - test
       - fingerprint
-    type: get-build
+    type: get_build
     params:
       fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
       profile: development
