@@ -6,6 +6,30 @@ on:
       - master
 
 jobs:
+  lint:
+    name: Lint
+    type: generic
+    steps:
+      - uses: eas/checkout
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+  test:
+    name: Tests
+    type: generic
+    steps:
+      - uses: eas/checkout
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --runInBand --passWithNoTests # Remove once tests are added
+
   fingerprint:
     name: Fingerprint
     type: fingerprint
@@ -13,7 +37,10 @@ jobs:
 
   get_android_build:
     name: Check for existing Android build
-    needs: [fingerprint]
+    needs:
+      - lint
+      - test
+      - fingerprint
     type: get-build
     params:
       fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
@@ -21,7 +48,8 @@ jobs:
 
   build_android:
     name: Build Android
-    needs: [get_android_build]
+    needs:
+      - get_android_build
     if: ${{ !needs.get_android_build.outputs.build_id }}
     type: build
     params:
@@ -30,7 +58,8 @@ jobs:
 
   publish_android_update:
     name: Publish Android update
-    needs: [get_android_build]
+    needs:
+      - get_android_build
     if: ${{ needs.get_android_build.outputs.build_id }}
     type: update
     params:
