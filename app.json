@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "receipt-split-x2",
-    "slug": "receipt-split-x2",
+    "slug": "receipt-split-proj",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -51,6 +51,19 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5c1842d8-2fb1-4f8d-a876-33758e657a62"
+      }
+    },
+    "owner": "t-rav4-org",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5c1842d8-2fb1-4f8d-a876-33758e657a62"
     }
   }
 }

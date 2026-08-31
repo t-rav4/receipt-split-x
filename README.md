@@ -1,4 +1,4 @@
-# Receipt Split — Prototype 2
+# Receipt Split
 
 A small React Native (Expo) prototype for quickly splitting receipt costs among friends and family. This is the second prototype focused on core flows for selecting a receipt, assigning items to users, and viewing a split summary.
 
