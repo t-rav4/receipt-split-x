@@ -41,7 +41,7 @@ jobs:
       - lint
       - test
       - fingerprint
-    type: get_build
+    type: get-build
     params:
       fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
       profile: development
