@@ -18,14 +18,16 @@ export function ReceiptListItem({
   return (
     <TouchableOpacity key={name} style={styles.container} onPress={onPress}>
       {/* Assigned Users */}
-      <View style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
-        {assignedUsers?.map((user) => (
-          <View
-            key={user.id}
-            style={[styles.userAvatar, { backgroundColor: user.colour }]}
-          />
-        ))}
-      </View>
+      {assignedUsers && assignedUsers?.length > 0 && (
+        <View style={{ flexDirection: "row", gap: 4 }}>
+          {assignedUsers?.map((user) => (
+            <View
+              key={user.id}
+              style={[styles.userAvatar, { backgroundColor: user.colour }]}
+            />
+          ))}
+        </View>
+      )}
 
       {/* Label */}
       <StyledText style={styles.label}>{name}</StyledText>
@@ -35,18 +37,15 @@ export function ReceiptListItem({
 }
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "darkgray",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 10,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "gray",
     flexDirection: "row",
     justifyContent: "space-between",
   },
   label: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "black",
   },
 
   userAvatar: {

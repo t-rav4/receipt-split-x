@@ -31,7 +31,7 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     const text = await extractText(pdfUri);
-    console.log("Extracted text:", text);
+    setRawExtractedText(text);
 
     const processedText = extractReceiptItems(text);
     setReceiptItems(processedText);

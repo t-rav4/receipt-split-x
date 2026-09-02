@@ -27,6 +27,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 14,
   },
 });

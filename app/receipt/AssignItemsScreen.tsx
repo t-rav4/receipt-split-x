@@ -1,13 +1,15 @@
 import { Chip } from "@/components/shared/Chip";
 import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
+import { colours } from "@/constants/colours";
 import { useReceiptContext } from "@/context/ReceiptContext";
 import { useUserContext } from "@/context/UserContext";
 import { User } from "@/types/user";
 import { ReceiptItem } from "@/utils/pdf-splitting";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ReceiptListItem } from "./components/ReceiptListItem";
 
 export default function AssignItemsScreen() {
@@ -47,36 +49,52 @@ export default function AssignItemsScreen() {
   // TODO: if you want to remove or add a new user to the splitting, allow user to go back
   // to the SelectUsersScreen without losing the extracted receipt items
 
+  const totalPrice = receiptItems
+    .reduce((acc, item) => acc + item.finalPrice, 0)
+    .toFixed(2);
+
   return (
     <View style={styles.container}>
-      <StyledText style={{ color: "white" }}>{selectedUser?.name}</StyledText>
+      <View style={styles.header}>
+        <StyledText>Select a user to assign items to.</StyledText>
+        <TouchableOpacity
+          style={{
+            borderRadius: 40,
+            borderWidth: 2,
+            borderColor: colours.primary,
+            padding: 4,
+          }}
+          onPress={() => push("/receipt/DebugRawReceiptScreen")}
+        >
+          <Ionicons name="help" color={colours.primary} size={15} />
+        </TouchableOpacity>
+      </View>
+
       {/* Selected Users - Toggle Select */}
-      <FlatList
-        horizontal
-        style={{
-          flexGrow: 0,
-          paddingVertical: 12,
-        }}
-        contentContainerStyle={{
-          justifyContent: "space-evenly",
-        }}
-        data={users}
-        keyExtractor={(item, index) => item.id + index}
-        renderItem={({ item }) => (
-          <Chip
-            label={item.name}
-            backgroundColour={item.colour}
-            onPress={() => toggleUserSelect(item.id)}
-          />
-        )}
-      />
+      <View style={styles.userChipsContainer}>
+        <FlatList
+          horizontal
+          contentContainerStyle={{
+            justifyContent: "space-evenly",
+          }}
+          data={users}
+          keyExtractor={(item, index) => item.id + index}
+          renderItem={({ item }) => (
+            <Chip
+              label={item.name}
+              backgroundColour={item.colour}
+              onPress={() => toggleUserSelect(item.id)}
+            />
+          )}
+        />
+      </View>
 
       {/* Receipt Items */}
       <FlatList
+        showsVerticalScrollIndicator
         style={{
-          flexGrow: 0,
+          flex: 1,
           width: "100%",
-          paddingVertical: 12,
         }}
         contentContainerStyle={{ gap: 8 }}
         data={receiptItems}
@@ -89,8 +107,12 @@ export default function AssignItemsScreen() {
             assignedUsers={item.assignedUsers}
           />
         )}
-        ListEmptyComponent={<Text>No receipt items</Text>}
+        ListEmptyComponent={<StyledText>No receipt items</StyledText>}
       />
+
+      <View style={{ paddingVertical: 40 }}>
+        <StyledText>Total Price: ${totalPrice}</StyledText>
+      </View>
 
       <View style={{ marginTop: "auto" }}>
         <WideButton
@@ -105,7 +127,17 @@ export default function AssignItemsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 60,
+    paddingTop: 80,
+    paddingBottom: 40, // TODO: fix up safe area view to avoid having to manually add paddingBottom
     paddingHorizontal: 12,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  userChipsContainer: {
+    paddingTop: 10,
+    paddingBottom: 15,
   },
 });
