@@ -1,4 +1,5 @@
 import { Chip } from "@/components/shared/Chip";
+import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
 import { colours } from "@/constants/colours";
@@ -12,9 +13,25 @@ import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ReceiptListItem } from "./components/ReceiptListItem";
 
+function HelpButton() {
+  const { push } = useRouter();
+  return (
+    <TouchableOpacity
+      style={{
+        borderRadius: 40,
+        borderWidth: 2,
+        borderColor: colours.primary,
+        padding: 4,
+        alignItems: "center",
+      }}
+      onPress={() => push("/receipt/DebugRawReceiptScreen")}
+    >
+      <Ionicons name="help" color={colours.primary} size={15} />
+    </TouchableOpacity>
+  );
+}
 export default function AssignItemsScreen() {
   const { push } = useRouter();
-
   const { users } = useUserContext();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -54,20 +71,13 @@ export default function AssignItemsScreen() {
     .toFixed(2);
 
   return (
-    <View style={styles.container}>
+    <ScreenLayout
+      title="Split Items"
+      showBackButton
+      rightComponent={<HelpButton />}
+    >
       <View style={styles.header}>
         <StyledText>Select a user to assign items to.</StyledText>
-        <TouchableOpacity
-          style={{
-            borderRadius: 40,
-            borderWidth: 2,
-            borderColor: colours.primary,
-            padding: 4,
-          }}
-          onPress={() => push("/receipt/DebugRawReceiptScreen")}
-        >
-          <Ionicons name="help" color={colours.primary} size={15} />
-        </TouchableOpacity>
       </View>
 
       {/* Selected Users - Toggle Select */}
@@ -79,13 +89,20 @@ export default function AssignItemsScreen() {
           }}
           data={users}
           keyExtractor={(item, index) => item.id + index}
-          renderItem={({ item }) => (
-            <Chip
-              label={item.name}
-              backgroundColour={item.colour}
-              onPress={() => toggleUserSelect(item.id)}
-            />
-          )}
+          renderItem={({ item }) => {
+            // TODO: improve the 'is selected' styling here
+            const computedStyle = {
+              opacity: selectedUser?.id === item.id ? 1 : 0.45,
+            };
+            return (
+              <Chip
+                label={item.name}
+                backgroundColour={item.colour}
+                onPress={() => toggleUserSelect(item.id)}
+                style={computedStyle}
+              />
+            );
+          }}
         />
       </View>
 
@@ -120,17 +137,11 @@ export default function AssignItemsScreen() {
           onPress={() => push("/receipt/SummaryScreen")}
         />
       </View>
-    </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 80,
-    paddingBottom: 40, // TODO: fix up safe area view to avoid having to manually add paddingBottom
-    paddingHorizontal: 12,
-  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

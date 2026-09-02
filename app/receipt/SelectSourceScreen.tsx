@@ -1,3 +1,4 @@
+import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import { getDocumentAsync } from "expo-document-picker";
 import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
@@ -21,28 +22,28 @@ export default function SelectSourceScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <TileButton
-        label="Upload a Receipt from file storage"
-        ioniIcon="cloud-upload"
-        onPress={handleSelectFile}
-      />
+    <ScreenLayout>
+      <View style={styles.container}>
+        <TileButton
+          label="Upload a Receipt from file storage"
+          ioniIcon="cloud-upload"
+          onPress={handleSelectFile}
+        />
 
-      <TileButton
-        label="Capture a photo of receipt using Camera"
-        ioniIcon="camera"
-        onPress={() => {}}
-      />
-    </View>
+        <TileButton
+          ioniIcon="camera"
+          label="Capture a photo of receipt using Camera"
+          onPress={() => {}}
+        />
+      </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#111111",
     gap: 80,
   },
 });

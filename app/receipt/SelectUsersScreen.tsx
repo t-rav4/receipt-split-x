@@ -1,4 +1,5 @@
 import { ColourPickerModal } from "@/components/colour-picker/ColourPickerModal";
+import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
 import { useUserContext } from "@/context/UserContext";
@@ -123,13 +124,12 @@ export default function SelectUsersScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StyledText style={styles.title}>Add Splitees</StyledText>
+    <ScreenLayout title="Add Splitees" showBackButton>
       <StyledText style={{ color: "white", fontSize: 14 }}>
         Select which users you wish to split your receipt with.
       </StyledText>
       <StyledText style={{ color: "grey", fontStyle: "italic" }}>
-        (Please select at least 2 users to continue)
+        Please select at least 2 users to continue.
       </StyledText>
 
       <View style={styles.addUserInputContainer}>
@@ -165,18 +165,11 @@ export default function SelectUsersScreen() {
         onSelect={handleSelectColour}
         onClose={() => setColourModalVisible(false)}
       />
-    </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 50,
-    paddingBottom: 45,
-    paddingHorizontal: 18,
-    gap: 10,
-  },
   title: {
     fontSize: 20,
     color: "white",
@@ -200,7 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: "gray",
-    borderRadius: 8,
+    borderRadius: 4,
     padding: 8,
     paddingLeft: 10,
     color: "white",
