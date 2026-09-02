@@ -148,7 +148,10 @@ export default function AssignItemsScreen() {
       </View>
 
       {users.map((user, _) => (
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          key={user.id}
+          style={{ flexDirection: "row", justifyContent: "space-between" }}
+        >
           <StyledText>{user.name}</StyledText>
           <StyledText>$ {(costsByUser[user.id] ?? 0).toFixed(2)}</StyledText>
         </View>
