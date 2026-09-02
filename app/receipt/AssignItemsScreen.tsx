@@ -70,6 +70,22 @@ export default function AssignItemsScreen() {
     .reduce((acc, item) => acc + item.finalPrice, 0)
     .toFixed(2);
 
+  const costsByUser = receiptItems.reduce<Record<string, number>>(
+    (costs, item) => {
+      const usersToCharge =
+        item.assignedUsers?.length > 0 ? item.assignedUsers : users;
+
+      const costPerUser = item.finalPrice / usersToCharge.length;
+
+      for (const user of usersToCharge) {
+        costs[user.id] = (costs[user.id] ?? 0) + costPerUser;
+      }
+
+      return costs;
+    },
+    {},
+  );
+
   return (
     <ScreenLayout
       title="Split Items"
@@ -115,7 +131,7 @@ export default function AssignItemsScreen() {
         }}
         contentContainerStyle={{ gap: 8 }}
         data={receiptItems}
-        keyExtractor={(item) => item.name}
+        keyExtractor={(item, index) => `${item.name}-${index}`}
         renderItem={({ item }) => (
           <ReceiptListItem
             name={item.name}
@@ -130,6 +146,13 @@ export default function AssignItemsScreen() {
       <View style={{ paddingVertical: 40 }}>
         <StyledText>Total Price: ${totalPrice}</StyledText>
       </View>
+
+      {users.map((user, _) => (
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <StyledText>{user.name}</StyledText>
+          <StyledText>$ {(costsByUser[user.id] ?? 0).toFixed(2)}</StyledText>
+        </View>
+      ))}
 
       <View style={{ marginTop: "auto" }}>
         <WideButton

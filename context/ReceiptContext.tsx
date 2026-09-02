@@ -60,6 +60,7 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
 
       return { ...receiptItem, assignedUsers: updatedAssignedUsers };
     });
+
     setReceiptItems(updatedItems);
   }
 
