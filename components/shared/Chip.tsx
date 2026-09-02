@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import StyledText from "./StyledText";
 
 interface ChipProps {
   label: string;
@@ -12,7 +13,7 @@ export function Chip({ label, backgroundColour: colour, onPress }: ChipProps) {
       style={[styles.chip, { backgroundColor: colour }]}
       onPress={onPress}
     >
-      <Text style={styles.label}>{label}</Text>
+      <StyledText style={styles.label}>{label}</StyledText>
     </TouchableOpacity>
   );
 }
@@ -25,7 +26,6 @@ const styles = StyleSheet.create({
     margin: 4,
   },
   label: {
-    color: "white",
     fontWeight: "bold",
     fontSize: 18,
   },

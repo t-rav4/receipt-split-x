@@ -1,19 +1,20 @@
+import StyledText from "@/components/shared/StyledText";
 import { User } from "@/types/user";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-interface ShoppingListItemProps {
+interface ReceiptListItemProps {
   name: string;
   price: number;
   onPress?: () => void;
   assignedUsers?: User[];
 }
 
-export function ShoppingListItem({
+export function ReceiptListItem({
   name,
   price,
   onPress,
   assignedUsers,
-}: ShoppingListItemProps) {
+}: ReceiptListItemProps) {
   return (
     <TouchableOpacity key={name} style={styles.container} onPress={onPress}>
       {/* Assigned Users */}
@@ -27,8 +28,8 @@ export function ShoppingListItem({
       </View>
 
       {/* Label */}
-      <Text style={styles.label}>{name}</Text>
-      <Text style={{ color: "white" }}>${price.toFixed(2)}</Text>
+      <StyledText style={styles.label}>{name}</StyledText>
+      <StyledText style={{ color: "white" }}>${price.toFixed(2)}</StyledText>
     </TouchableOpacity>
   );
 }

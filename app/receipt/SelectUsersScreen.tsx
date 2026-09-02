@@ -1,3 +1,5 @@
+import { ColourPickerModal } from "@/components/colour-picker/ColourPickerModal";
+import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
 import { useUserContext } from "@/context/UserContext";
 import { User } from "@/types/user";
@@ -7,7 +9,6 @@ import { useState } from "react";
 import {
   FlatList,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -16,7 +17,9 @@ import {
 function EmptyListComponent() {
   return (
     <View style={styles.emptyListContainer}>
-      <Text style={{ color: "gray", fontSize: 16 }}>No users added yet.</Text>
+      <StyledText style={{ color: "gray", fontSize: 14, textAlign: "center" }}>
+        You haven't added any users yet. Add a user to get started!
+      </StyledText>
     </View>
   );
 }
@@ -24,25 +27,23 @@ function EmptyListComponent() {
 export default function SelectUsersScreen() {
   const { push } = useRouter();
 
-  const { users, setUsers, deleteUser } = useUserContext();
-  const [inputUser, setInputUser] = useState<string | undefined>();
+  const { users, createUser, deleteUser, updateUser } = useUserContext();
+  const [usernameInput, setUsernameInput] = useState<string | undefined>();
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
     new Set(),
   );
 
+  const [colourModalVisible, setColourModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
   const handleAddUser = () => {
-    if (!inputUser || inputUser?.trim() === "") {
+    if (!usernameInput || usernameInput?.trim() === "") {
       return;
     }
 
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: inputUser.trim(),
-      colour: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-    };
-
-    setUsers((prev: User[]) => [...prev, newUser]);
-    setInputUser("");
+    const newUser = createUser(usernameInput.trim());
+    setUsernameInput("");
+    toggleUserSelect(newUser.id);
   };
 
   const toggleUserSelect = (userId: string) => {
@@ -56,26 +57,61 @@ export default function SelectUsersScreen() {
   };
 
   const removeUser = (userId: string) => {
-    const newSet = new Set(selectedUserIds);
-    newSet.delete(userId);
-    setSelectedUserIds(newSet);
+    if (selectedUserIds.has(userId)) {
+      const newSet = new Set(selectedUserIds);
+      newSet.delete(userId);
+      setSelectedUserIds(newSet);
+    }
+    deleteUser(userId);
+  };
 
-    deleteUser(userId); // Remove from context
+  const handleOpenColourPicker = (user: User) => {
+    setSelectedUser(user);
+    setColourModalVisible(true);
+  };
+
+  const handleSelectColour = async (colour: string) => {
+    if (selectedUser) {
+      await updateUser(selectedUser.id, { colour });
+    }
+    setColourModalVisible(false);
   };
 
   const renderItem = (user: User) => {
     const isSelected = selectedUserIds.has(user.id);
     const backgroundColor = isSelected ? "skyblue" : "transparent";
     const textColour = isSelected ? "black" : "white";
+    const colourIndicatorBorder = isSelected ? "black" : "transparent";
 
     return (
       <TouchableOpacity
-        style={[styles.userListItem, { backgroundColor }]}
+        style={[styles.userListItemContainer, { backgroundColor }]}
         onPress={() => toggleUserSelect(user.id)}
       >
-        <Text key={user.id} style={{ color: textColour, fontSize: 16 }}>
-          {user.name}
-        </Text>
+        <View style={styles.userListItemLabel}>
+          <TouchableOpacity
+            style={[
+              styles.userColourIndicator,
+              {
+                borderWidth: 1,
+                borderColor: colourIndicatorBorder,
+                backgroundColor: user.colour,
+              },
+            ]}
+            onPress={() => handleOpenColourPicker(user)}
+          />
+          <StyledText
+            key={user.id}
+            style={{
+              fontSize: 16,
+              color: textColour,
+              fontWeight: isSelected ? "bold" : "normal",
+            }}
+          >
+            {user.name}
+          </StyledText>
+        </View>
+
         <Ionicons
           name="trash"
           color="white"
@@ -86,19 +122,23 @@ export default function SelectUsersScreen() {
     );
   };
 
-  // TODO: user colour should be displayed on the user list item.
-  // TODO: should be able to pick the colour for new user
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add Splitees</Text>
+      <StyledText style={styles.title}>Add Splitees</StyledText>
+      <StyledText style={{ color: "white", fontSize: 14 }}>
+        Select which users you wish to split your receipt with.
+      </StyledText>
+      <StyledText style={{ color: "grey", fontStyle: "italic" }}>
+        (Please select at least 2 users to continue)
+      </StyledText>
 
       <View style={styles.addUserInputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Enter user name"
-          onChangeText={(text) => setInputUser(text)}
-          value={inputUser}
+          placeholderTextColor="grey"
+          placeholder="Add a user here..."
+          onChangeText={(text) => setUsernameInput(text)}
+          value={usernameInput}
         />
         <Ionicons name="add" size={24} color="white" onPress={handleAddUser} />
       </View>
@@ -111,15 +151,20 @@ export default function SelectUsersScreen() {
         ListEmptyComponent={<EmptyListComponent />}
       />
 
-      <View style={{ marginTop: "auto" }}>
+      <View style={{ marginTop: "auto", paddingTop: 15 }}>
         <WideButton
-          label="Next: Assign Items"
-          onPress={() => {
-            push("/receipt/AssignItemsScreen");
-          }}
-          disabled={selectedUserIds.size < 1}
+          label="Split!"
+          onPress={() => push("/receipt/AssignItemsScreen")}
+          disabled={selectedUserIds.size < 2}
         />
       </View>
+
+      <ColourPickerModal
+        visible={colourModalVisible}
+        currentColour={selectedUser?.colour}
+        onSelect={handleSelectColour}
+        onClose={() => setColourModalVisible(false)}
+      />
     </View>
   );
 }
@@ -127,9 +172,9 @@ export default function SelectUsersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 50,
     paddingBottom: 45,
-    paddingHorizontal: 12,
+    paddingHorizontal: 18,
     gap: 10,
   },
   title: {
@@ -141,14 +186,15 @@ const styles = StyleSheet.create({
   emptyListContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 20,
+    marginTop: "60%",
     paddingHorizontal: 12,
   },
   addUserInputContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingVertical: 10,
+    paddingTop: 18,
+    paddingBottom: 10,
   },
   input: {
     flex: 1,
@@ -159,7 +205,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     color: "white",
   },
-  userListItem: {
+  userListItemContainer: {
     borderRadius: 4,
     padding: 12,
     borderBottomColor: "gray",
@@ -168,5 +214,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 4,
+  },
+  userListItemLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 18,
+  },
+  userColourIndicator: {
+    borderRadius: 100,
+    width: 25,
+    height: 25,
   },
 });

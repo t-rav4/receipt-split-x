@@ -1,3 +1,4 @@
+import { colours } from "@/constants/colours";
 import { UserProvider } from "@/context/UserContext";
 import { Stack } from "expo-router";
 import { ReceiptProvider } from "../context/ReceiptContext";
@@ -9,7 +10,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: "#111111" },
+            contentStyle: { backgroundColor: colours.background },
           }}
         />
       </UserProvider>

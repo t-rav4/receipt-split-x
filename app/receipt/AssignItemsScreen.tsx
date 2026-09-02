@@ -1,4 +1,5 @@
 import { Chip } from "@/components/shared/Chip";
+import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
 import { useReceiptContext } from "@/context/ReceiptContext";
 import { useUserContext } from "@/context/UserContext";
@@ -7,7 +8,7 @@ import { ReceiptItem } from "@/utils/pdf-splitting";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { ShoppingListItem } from "./components/ShoppingListItem";
+import { ReceiptListItem } from "./components/ReceiptListItem";
 
 export default function AssignItemsScreen() {
   const { push } = useRouter();
@@ -48,7 +49,7 @@ export default function AssignItemsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={{ color: "white" }}>{selectedUser?.name}</Text>
+      <StyledText style={{ color: "white" }}>{selectedUser?.name}</StyledText>
       {/* Selected Users - Toggle Select */}
       <FlatList
         horizontal
@@ -81,7 +82,7 @@ export default function AssignItemsScreen() {
         data={receiptItems}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <ShoppingListItem
+          <ReceiptListItem
             name={item.name}
             price={item.finalPrice}
             onPress={() => handleOnItemPress(item)}

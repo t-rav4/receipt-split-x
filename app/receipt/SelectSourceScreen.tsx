@@ -23,14 +23,14 @@ export default function SelectSourceScreen() {
   return (
     <View style={styles.container}>
       <TileButton
-        label="Select a .pdf file from device storage"
-        icon="attach-outline"
+        label="Upload a Receipt from file storage"
+        ioniIcon="cloud-upload"
         onPress={handleSelectFile}
       />
 
       <TileButton
-        label="Take a photo of receipt using Camera"
-        icon="camera"
+        label="Capture a photo of receipt using Camera"
+        ioniIcon="camera"
         onPress={() => {}}
       />
     </View>
