@@ -4,7 +4,7 @@ export type ReceiptItem = {
   name: string;
   originalPrice: number;
   finalPrice: number;
-  assignedUsers?: User[];
+  assignedUsers: User[];
 };
 
 export function extractReceiptItems(text: string) {
@@ -25,8 +25,6 @@ export function extractReceiptItems(text: string) {
 
     // Match anything ending in a price
     const match = line.match(/^(.*?)\s+(-?\$?\d+\.\d{2})$/);
-
-    console.log(`Match: ${match}`);
     if (!match) {
       continue;
     }
@@ -90,6 +88,7 @@ export function extractReceiptItems(text: string) {
       name,
       originalPrice: price,
       finalPrice,
+      assignedUsers: [],
     });
   }
 

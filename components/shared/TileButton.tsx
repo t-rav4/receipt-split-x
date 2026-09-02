@@ -1,13 +1,18 @@
+import { colours } from "@/constants/colours";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface TileButtonProps {
   label: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  ioniIcon: React.ComponentProps<typeof Ionicons>["name"];
   onPress: () => void;
 }
 
-export const TileButton = ({ label, icon, onPress }: TileButtonProps) => {
+export const TileButton = ({
+  label,
+  ioniIcon: icon,
+  onPress,
+}: TileButtonProps) => {
   return (
     <View style={{ gap: 8, alignItems: "center" }}>
       <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -25,11 +30,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: 300,
     height: 200,
-    backgroundColor: "skyblue",
+    backgroundColor: colours.primary,
   },
 
   label: {
     fontSize: 16,
-    color: "white",
+    color: colours.text,
   },
 });
