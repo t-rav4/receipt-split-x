@@ -5,6 +5,8 @@
   "scripts": {
     "start": "expo start",
     "dev": "expo start --dev-client",
+    "update:development": "eas update --channel development",
+    "build:development": "eas build --profile development --platform android",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
