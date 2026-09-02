@@ -19,7 +19,7 @@ function EmptyListComponent() {
   return (
     <View style={styles.emptyListContainer}>
       <StyledText style={{ color: "gray", fontSize: 14, textAlign: "center" }}>
-        You haven't added any users yet. Add a user to get started!
+        You haven&apos;t added any users yet. Add a user to get started!
       </StyledText>
     </View>
   );
