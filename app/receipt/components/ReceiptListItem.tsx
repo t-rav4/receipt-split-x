@@ -1,14 +1,14 @@
 import StyledText from "@/components/shared/StyledText";
 import { User } from "@/types/user";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { ReactNode } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface ReceiptListItemProps {
   name: string;
   price: number;
-  onPress?: () => void;
   assignedUsers?: User[];
-  showEditActions?: boolean;
+  onPress?: () => void;
+  actions?: ReactNode;
 }
 
 export function ReceiptListItem({
@@ -16,7 +16,7 @@ export function ReceiptListItem({
   price,
   onPress,
   assignedUsers,
-  showEditActions = false,
+  actions,
 }: ReceiptListItemProps) {
   return (
     <TouchableOpacity key={name} style={styles.container} onPress={onPress}>
@@ -42,23 +42,7 @@ export function ReceiptListItem({
         )}
       </View>
 
-      {showEditActions && (
-        <View
-          style={{
-            gap: 10,
-            flexDirection: "row",
-          }}
-        >
-          {/* TODO: determine best how to implement the edit & remove here */}
-          <TouchableOpacity onPress={() => {}}>
-            <Ionicons name="pencil-outline" color="white" size={20} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => {}}>
-            <Ionicons name="trash" color="salmon" size={20} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {actions && actions}
     </TouchableOpacity>
   );
 }

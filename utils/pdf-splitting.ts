@@ -1,6 +1,8 @@
 import { User } from "@/types/user";
+import * as Crypto from "expo-crypto";
 
 export type ReceiptItem = {
+  id: string;
   name: string;
   originalPrice: number;
   finalPrice: number;
@@ -89,6 +91,7 @@ export function extractReceiptItems(text: string) {
     }
 
     items.push({
+      id: Crypto.randomUUID(),
       name,
       originalPrice: price,
       finalPrice,

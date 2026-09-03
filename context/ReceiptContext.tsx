@@ -11,6 +11,9 @@ interface ReceiptContextType {
   rawExtractedText?: string;
 
   receiptItems: ReceiptItem[];
+  updateItemById: (id: string, updatedItem: Partial<ReceiptItem>) => void;
+  deleteItemById: (id: string) => void;
+
   setReceiptItems: React.Dispatch<React.SetStateAction<ReceiptItem[]>>;
   assignUserToItem: (user: User, item: ReceiptItem) => void;
 
@@ -39,7 +42,7 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
 
   function assignUserToItem(user: User, item: ReceiptItem) {
     const updatedItems = receiptItems.map((receiptItem) => {
-      if (receiptItem.name !== item.name) return receiptItem;
+      if (receiptItem.id !== item.id) return receiptItem;
 
       // Toggle the user between assigned and unassigned
       const updatedAssignedUsers = receiptItem.assignedUsers
@@ -64,6 +67,20 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
     setReceiptItems(updatedItems);
   }
 
+  function updateItemById(id: string, updatedItem: Partial<ReceiptItem>) {
+    setReceiptItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id ? { ...item, ...updatedItem } : item,
+      ),
+    );
+  }
+
+  function deleteItemById(id: string) {
+    setReceiptItems((currentItems) =>
+      currentItems.filter((item) => item.id !== id),
+    );
+  }
+
   return (
     <ReceiptContext.Provider
       value={{
@@ -73,6 +90,8 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
         assignUserToItem,
 
         setReceiptItems,
+        updateItemById,
+        deleteItemById,
         rawExtractedText,
         extractItemsFromPdf,
       }}

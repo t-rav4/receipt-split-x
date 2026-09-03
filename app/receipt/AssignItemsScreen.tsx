@@ -30,6 +30,10 @@ function HelpButton() {
     </TouchableOpacity>
   );
 }
+
+// TODO: a button that groups the items by assigned user?
+// TODO: filter by user?
+
 export default function AssignItemsScreen() {
   const { push } = useRouter();
   const { users } = useUserContext();
@@ -59,9 +63,6 @@ export default function AssignItemsScreen() {
     }
     assignUserToItem(selectedUser, item);
   }
-
-  // TODO: if a receipt item was incorrectly extracted (bad price etc), allow user to view raw extracted text
-  // and tweak the price if needed
 
   // TODO: if you want to remove or add a new user to the splitting, allow user to go back
   // to the SelectUsersScreen without losing the extracted receipt items
