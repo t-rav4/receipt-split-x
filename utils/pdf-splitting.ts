@@ -46,6 +46,10 @@ export function extractReceiptItems(text: string) {
       upperName.startsWith("EFT") ||
       upperName.startsWith("PURCHASE") ||
       upperName.startsWith("RRN") ||
+      upperName.includes("SUBTOTAL") ||
+      upperName.startsWith("CHANGE") ||
+      upperName.startsWith("YOU SAVED") ||
+      /^X-\d+$/.test(upperName) ||
       upperName.includes("AUD$")
     ) {
       continue;

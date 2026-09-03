@@ -6,23 +6,23 @@ A small React Native (Expo) prototype for quickly splitting receipt costs among 
 
 - Install dependencies:
 
-   ```bash
-   npm install
-   ```
+  ```bash
+  npm install
+  ```
 
 - First-time Android/dev-client (builds and installs a development client on the emulator or device):
 
-   ```bash
-   npm run android
-   ```
+  ```bash
+  npm run android
+  ```
 
-   Note: `npm run android` runs `expo run:android` which builds a development client. You must have Android Studio with a configured Android Virtual Device (AVD) or a connected Android device.
+  Note: `npm run android` runs `expo run:android` which builds a development client. You must have Android Studio with a configured Android Virtual Device (AVD) or a connected Android device.
 
 - Start the Expo dev server for the development client:
 
-   ```bash
-   npx expo start --dev-client
-   ```
+  ```bash
+  npx expo start --dev-client
+  ```
 
 ## Useful scripts
 
@@ -41,3 +41,12 @@ A small React Native (Expo) prototype for quickly splitting receipt costs among 
 - For iOS development: Xcode on macOS
 
 If you plan to use the dev-client workflow, install the native build once with `npm run android` (or follow Expo docs for iOS) before using `--dev-client`.
+
+## Tips
+
+- Use the following cmd to upload to android emulator ()
+
+  ```bash
+  cd "$env:LOCALAPPDATA\Android\Sdk\platform-tools"
+  adb push "C:\path\to\your\file.pdf" /sdcard/Download/filename.pdf
+  ```
