@@ -67,6 +67,8 @@ export default function AssignItemsScreen() {
   // TODO: if you want to remove or add a new user to the splitting, allow user to go back
   // to the SelectUsersScreen without losing the extracted receipt items
 
+  // TODO: discounts could allow for negative costs - to be divided amongst splitees
+
   const totalPrice = receiptItems
     .reduce((acc, item) => acc + item.finalPrice, 0)
     .toFixed(2);

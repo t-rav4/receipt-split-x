@@ -18,11 +18,17 @@ export function EditReceiptItemModal({
   visible,
   onClose,
 }: EditReceiptItemModalProps) {
-  const [input, setInput] = useState(item.finalPrice.toFixed(2));
+  const [input, setInput] = useState(item.finalPrice.toFixed(2)); // TODO: needs some sanitization
 
   return (
     <RSModal title="Edit Item Price" visible={visible} onClose={onClose}>
-      <View style={{ paddingVertical: 40, paddingHorizontal: 20, gap: 12 }}>
+      <View
+        style={{
+          paddingTop: 20,
+          paddingHorizontal: 20,
+          gap: 20,
+        }}
+      >
         <StyledText>{item.name}</StyledText>
 
         <View style={styles.inputContainer}>
@@ -36,11 +42,13 @@ export function EditReceiptItemModal({
           />
         </View>
 
-        <WideButton
-          label="Save"
-          onPress={() => onEditPrice(item.id, input)}
-          disabled={input === item.finalPrice.toFixed(2)}
-        />
+        <View style={{ paddingTop: 20 }}>
+          <WideButton
+            label="Save"
+            onPress={() => onEditPrice(item.id, input)}
+            disabled={input === item.finalPrice.toFixed(2)}
+          />
+        </View>
       </View>
     </RSModal>
   );

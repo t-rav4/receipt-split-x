@@ -81,8 +81,6 @@ export default function DebugRawReceiptScreen() {
         />
       </View>
 
-      <StyledText>Editing item: {editingItem?.name}</StyledText>
-
       {viewType === "RAW_EXTRACT" &&
         (rawExtractedText ? (
           <ScrollView style={{ paddingVertical: 10, alignSelf: "center" }}>
