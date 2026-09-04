@@ -1,9 +1,18 @@
-import { User } from "@/types/user";
 import { extractReceiptItems, ReceiptItem } from "@/utils/pdf-splitting";
 import { extractText, isAvailable } from "expo-pdf-text-extract";
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface ReceiptContextType {
+  spliteeIds: Set<string>;
+  addSplitee: (userId: string) => void;
+  removeSplitee: (userId: string) => void;
+
   selectedFile: string | null;
   setSelectedFile: (file: string | null) => void;
 
@@ -15,7 +24,8 @@ interface ReceiptContextType {
   deleteItemById: (id: string) => void;
 
   setReceiptItems: React.Dispatch<React.SetStateAction<ReceiptItem[]>>;
-  assignUserToItem: (user: User, item: ReceiptItem) => void;
+  assignUserToItem: (userId: string, item: ReceiptItem) => void;
+  unassignUserFromAnyItems: (userId: string) => void;
 
   extractItemsFromPdf: (pdfUri: string) => Promise<void>;
 }
@@ -23,6 +33,7 @@ interface ReceiptContextType {
 const ReceiptContext = createContext<ReceiptContextType | undefined>(undefined);
 
 export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
+  const [spliteeIds, setSpliteeIds] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
@@ -40,55 +51,76 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
     setReceiptItems(processedText);
   }
 
-  function assignUserToItem(user: User, item: ReceiptItem) {
-    const updatedItems = receiptItems.map((receiptItem) => {
-      if (receiptItem.id !== item.id) return receiptItem;
+  useEffect(() => {
+    if (selectedFile) {
+      extractItemsFromPdf(selectedFile);
+    }
+  }, [selectedFile]);
 
-      // Toggle the user between assigned and unassigned
-      const updatedAssignedUsers = receiptItem.assignedUsers
-        ? [...receiptItem.assignedUsers]
-        : [];
+  function addSplitee(userId: string) {
+    setSpliteeIds((prev) => new Set(prev).add(userId));
+  }
 
-      const userIndex = updatedAssignedUsers.findIndex(
-        (assignedUser) => assignedUser.id === user.id,
-      );
+  function removeSplitee(userId: string) {
+    const newSet = new Set(spliteeIds);
+    newSet.delete(userId);
+    setSpliteeIds(newSet);
+  }
 
-      if (userIndex !== -1) {
-        // Remove user if already assigned
-        updatedAssignedUsers.splice(userIndex, 1);
-      } else {
-        // Add user if not already assigned
-        updatedAssignedUsers.push(user);
+  function unassignUserFromAnyItems(userId: string) {
+    const updated = receiptItems.map((item) => {
+      if (item.assignedUserIds.has(userId)) {
+        const updatedAssignedUserIds = new Set(item.assignedUserIds);
+        updatedAssignedUserIds.delete(userId);
+        return { ...item, assignedUserIds: updatedAssignedUserIds };
       }
 
-      return { ...receiptItem, assignedUsers: updatedAssignedUsers };
+      return item;
+    });
+
+    setReceiptItems(updated);
+  }
+
+  function assignUserToItem(userId: string, item: ReceiptItem) {
+    const updatedItems = receiptItems.map((item) => {
+      if (item.id !== item.id || item.assignedUserIds.has(userId)) {
+        return item;
+      }
+
+      const updatedAssignedUserIds = new Set(item.assignedUserIds);
+      updatedAssignedUserIds.add(userId);
+
+      return { ...item, assignedUserIds: updatedAssignedUserIds };
     });
 
     setReceiptItems(updatedItems);
   }
 
   function updateItemById(id: string, updatedItem: Partial<ReceiptItem>) {
-    setReceiptItems((currentItems) =>
-      currentItems.map((item) =>
+    setReceiptItems((items) =>
+      items.map((item) =>
         item.id === id ? { ...item, ...updatedItem } : item,
       ),
     );
   }
 
   function deleteItemById(id: string) {
-    setReceiptItems((currentItems) =>
-      currentItems.filter((item) => item.id !== id),
-    );
+    setReceiptItems((items) => items.filter((item) => item.id !== id));
   }
 
   return (
     <ReceiptContext.Provider
       value={{
+        spliteeIds,
+        addSplitee,
+        removeSplitee,
+
         selectedFile,
         setSelectedFile,
-        receiptItems,
         assignUserToItem,
+        unassignUserFromAnyItems,
 
+        receiptItems,
         setReceiptItems,
         updateItemById,
         deleteItemById,

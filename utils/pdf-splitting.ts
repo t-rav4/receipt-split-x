@@ -1,4 +1,3 @@
-import { User } from "@/types/user";
 import * as Crypto from "expo-crypto";
 
 export type ReceiptItem = {
@@ -6,7 +5,7 @@ export type ReceiptItem = {
   name: string;
   originalPrice: number;
   finalPrice: number;
-  assignedUsers: User[];
+  assignedUserIds: Set<string>;
 };
 
 export function extractReceiptItems(text: string) {
@@ -95,7 +94,7 @@ export function extractReceiptItems(text: string) {
       name,
       originalPrice: price,
       finalPrice,
-      assignedUsers: [],
+      assignedUserIds: new Set(),
     });
   }
 

@@ -2,6 +2,7 @@ import { ColourPickerModal } from "@/components/colour-picker/ColourPickerModal"
 import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import StyledText from "@/components/shared/StyledText";
 import { WideButton } from "@/components/shared/WideButton";
+import { useReceiptContext } from "@/context/ReceiptContext";
 import { useUserContext } from "@/context/UserContext";
 import { User } from "@/types/user";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -29,10 +30,10 @@ export default function SelectUsersScreen() {
   const { push } = useRouter();
 
   const { users, createUser, deleteUser, updateUser } = useUserContext();
+  const { spliteeIds, addSplitee, removeSplitee, unassignUserFromAnyItems } =
+    useReceiptContext();
+
   const [usernameInput, setUsernameInput] = useState<string | undefined>();
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
-    new Set(),
-  );
 
   const [colourModalVisible, setColourModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -48,20 +49,19 @@ export default function SelectUsersScreen() {
   };
 
   const toggleUserSelect = (userId: string) => {
-    if (selectedUserIds.has(userId)) {
-      const newSet = new Set(selectedUserIds);
-      newSet.delete(userId);
-      setSelectedUserIds(newSet);
-    } else {
-      setSelectedUserIds((prev) => new Set(prev).add(userId));
+    if (spliteeIds.has(userId)) {
+      unassignUserFromAnyItems(userId);
+      removeSplitee(userId);
+      return;
     }
+
+    addSplitee(userId);
   };
 
-  const removeUser = (userId: string) => {
-    if (selectedUserIds.has(userId)) {
-      const newSet = new Set(selectedUserIds);
-      newSet.delete(userId);
-      setSelectedUserIds(newSet);
+  const handleDeleteUser = (userId: string) => {
+    if (spliteeIds.has(userId)) {
+      unassignUserFromAnyItems(userId);
+      removeSplitee(userId);
     }
     deleteUser(userId);
   };
@@ -79,7 +79,7 @@ export default function SelectUsersScreen() {
   };
 
   const renderItem = (user: User) => {
-    const isSelected = selectedUserIds.has(user.id);
+    const isSelected = spliteeIds.has(user.id);
     const backgroundColor = isSelected ? "skyblue" : "transparent";
     const textColour = isSelected ? "black" : "white";
     const colourIndicatorBorder = isSelected ? "black" : "transparent";
@@ -117,7 +117,7 @@ export default function SelectUsersScreen() {
           name="trash"
           color="white"
           size={18}
-          onPress={() => removeUser(user.id)}
+          onPress={() => handleDeleteUser(user.id)}
         />
       </TouchableOpacity>
     );
@@ -155,7 +155,7 @@ export default function SelectUsersScreen() {
         <WideButton
           label="Split!"
           onPress={() => push("/receipt/AssignItemsScreen")}
-          disabled={selectedUserIds.size < 2}
+          disabled={spliteeIds.size < 2}
         />
       </View>
 

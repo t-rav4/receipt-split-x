@@ -5,11 +5,10 @@ import { WideButton } from "@/components/shared/WideButton";
 import { colours } from "@/constants/colours";
 import { useReceiptContext } from "@/context/ReceiptContext";
 import { useUserContext } from "@/context/UserContext";
-import { User } from "@/types/user";
 import { ReceiptItem } from "@/utils/pdf-splitting";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ReceiptListItem } from "./components/ReceiptListItem";
 
@@ -36,36 +35,28 @@ function HelpButton() {
 
 export default function AssignItemsScreen() {
   const { push } = useRouter();
+
   const { users } = useUserContext();
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { spliteeIds, receiptItems, assignUserToItem } = useReceiptContext();
 
-  const { selectedFile, receiptItems, assignUserToItem, extractItemsFromPdf } =
-    useReceiptContext();
+  const splitees = users.filter((user) => spliteeIds.has(user.id));
 
-  useEffect(() => {
-    if (selectedFile) {
-      extractItemsFromPdf(selectedFile);
-    }
-  }, [selectedFile, extractItemsFromPdf]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   function toggleUserSelect(userId: string) {
-    if (selectedUser?.id === userId) {
-      setSelectedUser(null);
+    if (selectedUserId === userId) {
+      setSelectedUserId(null);
       return;
     }
-    const user = users.find((u) => u.id === userId);
-    setSelectedUser(user || null);
+    setSelectedUserId(userId);
   }
 
   function handleOnItemPress(item: ReceiptItem) {
-    if (!selectedUser) {
+    if (!selectedUserId) {
       return;
     }
-    assignUserToItem(selectedUser, item);
+    assignUserToItem(selectedUserId, item);
   }
-
-  // TODO: if you want to remove or add a new user to the splitting, allow user to go back
-  // to the SelectUsersScreen without losing the extracted receipt items
 
   // TODO: discounts could allow for negative costs - to be divided amongst splitees
 
@@ -76,12 +67,12 @@ export default function AssignItemsScreen() {
   const costsByUser = receiptItems.reduce<Record<string, number>>(
     (costs, item) => {
       const usersToCharge =
-        item.assignedUsers?.length > 0 ? item.assignedUsers : users;
+        item.assignedUserIds.size > 0 ? item.assignedUserIds : spliteeIds;
 
-      const costPerUser = item.finalPrice / usersToCharge.length;
+      const costPerUser = item.finalPrice / usersToCharge.size;
 
-      for (const user of usersToCharge) {
-        costs[user.id] = (costs[user.id] ?? 0) + costPerUser;
+      for (const userId of usersToCharge) {
+        costs[userId] = (costs[userId] ?? 0) + costPerUser;
       }
 
       return costs;
@@ -102,16 +93,16 @@ export default function AssignItemsScreen() {
       {/* Selected Users - Toggle Select */}
       <View style={styles.userChipsContainer}>
         <FlatList
+          data={splitees}
           horizontal
           contentContainerStyle={{
             justifyContent: "space-evenly",
           }}
-          data={users}
           keyExtractor={(item, index) => item.id + index}
           renderItem={({ item }) => {
             // TODO: improve the 'is selected' styling here
             const computedStyle = {
-              opacity: selectedUser?.id === item.id ? 1 : 0.45,
+              opacity: selectedUserId === item.id ? 1 : 0.45,
             };
             return (
               <Chip
@@ -135,14 +126,20 @@ export default function AssignItemsScreen() {
         contentContainerStyle={{ gap: 8 }}
         data={receiptItems}
         keyExtractor={(item, index) => `${item.name}-${index}`}
-        renderItem={({ item }) => (
-          <ReceiptListItem
-            name={item.name}
-            price={item.finalPrice}
-            onPress={() => handleOnItemPress(item)}
-            assignedUsers={item.assignedUsers}
-          />
-        )}
+        renderItem={({ item }) => {
+          const assignedUsers = users.filter((u) =>
+            item.assignedUserIds.has(u.id),
+          );
+
+          return (
+            <ReceiptListItem
+              name={item.name}
+              price={item.finalPrice}
+              onPress={() => handleOnItemPress(item)}
+              assignedUsers={assignedUsers}
+            />
+          );
+        }}
         ListEmptyComponent={<StyledText>No receipt items</StyledText>}
       />
 
@@ -150,13 +147,13 @@ export default function AssignItemsScreen() {
         <StyledText>Total Price: ${totalPrice}</StyledText>
       </View>
 
-      {users.map((user, _) => (
+      {splitees.map((splitee, _) => (
         <View
-          key={user.id}
+          key={splitee.id}
           style={{ flexDirection: "row", justifyContent: "space-between" }}
         >
-          <StyledText>{user.name}</StyledText>
-          <StyledText>$ {(costsByUser[user.id] ?? 0).toFixed(2)}</StyledText>
+          <StyledText>{splitee.name}</StyledText>
+          <StyledText>$ {(costsByUser[splitee.id] ?? 0).toFixed(2)}</StyledText>
         </View>
       ))}
 
