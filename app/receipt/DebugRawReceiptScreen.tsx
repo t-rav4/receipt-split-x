@@ -4,7 +4,6 @@ import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import StyledText from "@/components/shared/StyledText";
 import { colours } from "@/constants/colours";
 import { useReceiptContext } from "@/context/ReceiptContext";
-import { useUserContext } from "@/context/UserContext";
 import { ReceiptItem } from "@/utils/pdf-splitting";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
@@ -20,14 +19,8 @@ import { ReceiptListItem } from "./components/ReceiptListItem";
 type DebugView = "RAW_EXTRACT" | "PROCESSED_EXTRACT";
 
 export default function DebugRawReceiptScreen() {
-  const { users } = useUserContext();
-  const {
-    spliteeIds,
-    rawExtractedText,
-    receiptItems,
-    updateItemById,
-    deleteItemById,
-  } = useReceiptContext();
+  const { rawExtractedText, receiptItems, updateItemById, deleteItemById } =
+    useReceiptContext();
 
   const [viewType, setViewType] = useState<DebugView>("PROCESSED_EXTRACT");
 
@@ -110,17 +103,13 @@ export default function DebugRawReceiptScreen() {
           contentContainerStyle={{ gap: 8 }}
           data={receiptItems}
           keyExtractor={(item) => item.name}
-          renderItem={({ item }) => {
-            const assignedUsers = users.filter((u) => spliteeIds.has(u.id));
-            return (
-              <ReceiptListItem
-                name={item.name}
-                price={item.finalPrice}
-                assignedUsers={assignedUsers}
-                actions={<ItemActions item={item} />}
-              />
-            );
-          }}
+          renderItem={({ item }) => (
+            <ReceiptListItem
+              name={item.name}
+              price={item.finalPrice}
+              actions={<ItemActions item={item} />}
+            />
+          )}
           ListEmptyComponent={<StyledText>No receipt items</StyledText>}
         />
       )}

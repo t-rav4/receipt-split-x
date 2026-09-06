@@ -81,14 +81,19 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
     setReceiptItems(updated);
   }
 
-  function assignUserToItem(userId: string, item: ReceiptItem) {
+  function assignUserToItem(userId: string, assignedItem: ReceiptItem) {
     const updatedItems = receiptItems.map((item) => {
-      if (item.id !== item.id || item.assignedUserIds.has(userId)) {
+      if (item.id !== assignedItem.id) {
         return item;
       }
 
       const updatedAssignedUserIds = new Set(item.assignedUserIds);
-      updatedAssignedUserIds.add(userId);
+
+      if (item.assignedUserIds.has(userId)) {
+        updatedAssignedUserIds.delete(userId);
+      } else {
+        updatedAssignedUserIds.add(userId);
+      }
 
       return { ...item, assignedUserIds: updatedAssignedUserIds };
     });
