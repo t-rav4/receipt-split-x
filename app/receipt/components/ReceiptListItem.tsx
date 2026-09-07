@@ -1,4 +1,5 @@
 import StyledText from "@/components/shared/StyledText";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { User } from "@/types/user";
 import { ReactNode } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -32,11 +33,8 @@ export function ReceiptListItem({
         {/* Assigned Users */}
         {assignedUsers && assignedUsers?.length > 0 && (
           <View style={{ paddingTop: 8, flexDirection: "row", gap: 4 }}>
-            {assignedUsers?.map((user) => (
-              <View
-                key={user.id}
-                style={[styles.userAvatar, { backgroundColor: user.colour }]}
-              />
+            {assignedUsers?.map(({ id, name, colour }) => (
+              <UserAvatar key={id} name={name} colour={colour} size={24} />
             ))}
           </View>
         )}
@@ -65,11 +63,5 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 16,
-  },
-
-  userAvatar: {
-    borderRadius: 100,
-    width: 20,
-    height: 20,
   },
 });
