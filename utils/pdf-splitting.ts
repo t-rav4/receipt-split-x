@@ -68,11 +68,18 @@ export function extractReceiptItems(text: string) {
         .trim();
 
       // Search backwards for matching item
+      let matchedItem = false;
       for (let j = items.length - 1; j >= 0; j--) {
         if (items[j].name.includes(discountBaseName)) {
           items[j].finalPrice += price; // subtract discount
+          matchedItem = true;
           break;
         }
+      }
+
+      // Fall back to the preceding item when an "X FOR $Y" discount cannot be matched by product name.
+      if (!matchedItem && /\b\d+\s+FOR\s+\$?\d+(?:\.\d{2})?\b/i.test(name)) {
+        items[items.length - 1].finalPrice += price;
       }
 
       continue;

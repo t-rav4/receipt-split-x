@@ -13,7 +13,7 @@ import { FlatList, StyleSheet, View } from "react-native";
 export default function SummaryScreen() {
   const router = useRouter();
   const { users } = useUserContext();
-  const { spliteeIds, receiptItems } = useReceiptContext();
+  const { spliteeIds, receiptItems, costsByUser } = useReceiptContext();
 
   const splitees = users.filter((u) => spliteeIds.has(u.id));
 
@@ -29,11 +29,13 @@ export default function SummaryScreen() {
     name,
     colour,
     items,
+    totalOwed,
   }: {
     key: string;
     name: string;
     colour: string;
     items: ReceiptItem[];
+    totalOwed: string;
   }) => {
     return (
       <Accordion
@@ -55,7 +57,9 @@ export default function SummaryScreen() {
                 <StyledText>{`${items.length} items  .  9 shared item`}</StyledText>
               </View>
 
-              <StyledText style={{ fontWeight: "bold" }}>$24.50</StyledText>
+              <StyledText style={{ fontWeight: "bold" }}>
+                $ {totalOwed}
+              </StyledText>
             </View>
           </View>
         }
@@ -65,7 +69,7 @@ export default function SummaryScreen() {
           renderItem={({ item }) => (
             <View key={item.id} style={styles.expandedAccordionContainer}>
               <StyledText>{item.name}</StyledText>
-              <StyledText>{item.finalPrice.toFixed(2)}</StyledText>
+              <StyledText>$ {item.finalPrice.toFixed(2)}</StyledText>
             </View>
           )}
         />
@@ -73,13 +77,18 @@ export default function SummaryScreen() {
     );
   };
 
+  const totalAmount = receiptItems
+    .reduce((acc, item) => acc + item.finalPrice, 0)
+    .toFixed(2);
+  const numberOfSplitees = spliteeIds.size;
+
   return (
     <ScreenLayout title="Summary" showBackButton>
       <View style={styles.header}>
         <Ionicons name="receipt" color="white" size={48} />
         <StyledText>Total amount</StyledText>
-        <StyledText>$ 100.00</StyledText>
-        <StyledText>Split between 4 people</StyledText>
+        <StyledText>$ {totalAmount}</StyledText>
+        <StyledText>Split between {numberOfSplitees} people</StyledText>
       </View>
 
       <FlatList
@@ -90,6 +99,7 @@ export default function SummaryScreen() {
             name: item.name,
             colour: item.colour,
             items: item.items,
+            totalOwed: (costsByUser[item.id] ?? 0).toFixed(2),
           })
         }
       />

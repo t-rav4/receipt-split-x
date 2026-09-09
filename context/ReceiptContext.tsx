@@ -1,3 +1,4 @@
+import { calculateCostsByUser } from "@/utils/calculate-costs-by-user";
 import { extractReceiptItems, ReceiptItem } from "@/utils/pdf-splitting";
 import { extractText, isAvailable } from "expo-pdf-text-extract";
 import React, {
@@ -26,6 +27,8 @@ interface ReceiptContextType {
   setReceiptItems: React.Dispatch<React.SetStateAction<ReceiptItem[]>>;
   assignUserToItem: (userId: string, item: ReceiptItem) => void;
   unassignUserFromAnyItems: (userId: string) => void;
+
+  costsByUser: Record<string, number>; // e.g { '1234': 12.00 } where { 'userId': 'totalCostOwed' }
 
   extractItemsFromPdf: (pdfUri: string) => Promise<void>;
 }
@@ -113,6 +116,8 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
     setReceiptItems((items) => items.filter((item) => item.id !== id));
   }
 
+  const costsByUser = calculateCostsByUser(receiptItems, spliteeIds);
+
   return (
     <ReceiptContext.Provider
       value={{
@@ -129,6 +134,9 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
         setReceiptItems,
         updateItemById,
         deleteItemById,
+
+        costsByUser,
+
         rawExtractedText,
         extractItemsFromPdf,
       }}
