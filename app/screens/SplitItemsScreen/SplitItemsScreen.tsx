@@ -110,7 +110,7 @@ export default function SplitItemsScreen() {
               paddingVertical: 4,
               borderRadius: 12,
               backgroundColor:
-                selectedUserId === user.id ? colours.secondary : "",
+                selectedUserId === user.id ? colours.secondary : "transparent",
             };
             return (
               <TouchableOpacity
