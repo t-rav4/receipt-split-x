@@ -154,7 +154,7 @@ export default function SelectUsersScreen() {
       <View style={{ marginTop: "auto", paddingTop: 15 }}>
         <WideButton
           label="Split!"
-          onPress={() => push("/receipt/AssignItemsScreen")}
+          onPress={() => push("/screens/SplitItemsScreen/SplitItemsScreen")}
           disabled={spliteeIds.size < 2}
         />
       </View>

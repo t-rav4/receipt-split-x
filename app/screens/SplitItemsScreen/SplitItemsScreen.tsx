@@ -1,6 +1,7 @@
-import { Chip } from "@/components/shared/Chip";
+import { ReceiptListItem } from "@/app/receipt/components/ReceiptListItem";
 import { ScreenLayout } from "@/components/shared/ScreenLayout";
 import StyledText from "@/components/shared/StyledText";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { WideButton } from "@/components/shared/WideButton";
 import { colours } from "@/constants/colours";
 import { useReceiptContext } from "@/context/ReceiptContext";
@@ -9,8 +10,14 @@ import { ReceiptItem } from "@/utils/pdf-splitting";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
-import { ReceiptListItem } from "./components/ReceiptListItem";
+import {
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import { ReceiptSummaryCard } from "./ReceiptSummaryCard";
 
 function HelpButton() {
   const { push } = useRouter();
@@ -33,11 +40,12 @@ function HelpButton() {
 // TODO: a button that groups the items by assigned user?
 // TODO: filter by user?
 
-export default function AssignItemsScreen() {
+export default function SplitItemsScreen() {
   const { push } = useRouter();
 
   const { users } = useUserContext();
-  const { spliteeIds, receiptItems, assignUserToItem } = useReceiptContext();
+  const { spliteeIds, receiptItems, assignUserToItem, costsByUser, totalCost } =
+    useReceiptContext();
 
   const splitees = users.filter((user) => spliteeIds.has(user.id));
 
@@ -58,36 +66,31 @@ export default function AssignItemsScreen() {
     assignUserToItem(selectedUserId, item);
   }
 
-  // TODO: discounts could allow for negative costs - to be divided amongst splitees
-
-  const totalPrice = receiptItems // TODO: possibly move this to ReceiptContext if we need to render on multiple screens?
-    .reduce((acc, item) => acc + item.finalPrice, 0)
-    .toFixed(2);
-
-  const costsByUser = receiptItems.reduce<Record<string, number>>(
-    (costs, item) => {
-      const usersToCharge =
-        item.assignedUserIds.size > 0 ? item.assignedUserIds : spliteeIds;
-
-      const costPerUser = item.finalPrice / usersToCharge.size;
-
-      for (const userId of usersToCharge) {
-        costs[userId] = (costs[userId] ?? 0) + costPerUser;
-      }
-
-      return costs;
-    },
-    {},
-  );
-
   return (
     <ScreenLayout
       title="Split Items"
       showBackButton
       rightComponent={<HelpButton />}
     >
-      <View style={styles.header}>
-        <StyledText>Select a user to assign items to.</StyledText>
+      <ReceiptSummaryCard
+        receiptName="Coles"
+        numOfItems={receiptItems.length}
+        numOfSplitees={spliteeIds.size}
+        totalAmount={totalCost}
+      />
+
+      <View style={{}}>
+        <StyledText
+          style={{ fontWeight: "bold", fontSize: 16, paddingVertical: 4 }}
+        >
+          Assign items to people
+        </StyledText>
+        <StyledText style={{ color: colours.info }}>
+          Select the person(s) responsible for each item.
+        </StyledText>
+        <StyledText style={{ color: colours.info }}>
+          Leave unassigned to split evenly.
+        </StyledText>
       </View>
 
       {/* Selected Users - Toggle Select */}
@@ -98,19 +101,25 @@ export default function AssignItemsScreen() {
           contentContainerStyle={{
             justifyContent: "space-evenly",
           }}
-          keyExtractor={(item, index) => item.id + index}
-          renderItem={({ item }) => {
-            // TODO: improve the 'is selected' styling here
-            const computedStyle = {
-              opacity: selectedUserId === item.id ? 1 : 0.45,
+          keyExtractor={(user) => user.id}
+          renderItem={({ item: user }) => {
+            const computedStyle: ViewStyle = {
+              gap: 4,
+              alignItems: "center",
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              borderRadius: 12,
+              backgroundColor:
+                selectedUserId === user.id ? colours.secondary : "",
             };
             return (
-              <Chip
-                label={item.name}
-                backgroundColour={item.colour}
-                onPress={() => toggleUserSelect(item.id)}
+              <TouchableOpacity
                 style={computedStyle}
-              />
+                onPress={() => toggleUserSelect(user.id)}
+              >
+                <UserAvatar name={user.name} colour={user.colour} />
+                <StyledText>{user.name}</StyledText>
+              </TouchableOpacity>
             );
           }}
         />
@@ -140,22 +149,8 @@ export default function AssignItemsScreen() {
             />
           );
         }}
-        ListEmptyComponent={<StyledText>No receipt items</StyledText>}
+        ListEmptyComponent={<StyledText>No receipt items</StyledText>} // TODO: add better UI here
       />
-
-      <View style={{ paddingVertical: 40 }}>
-        <StyledText>Total Price: ${totalPrice}</StyledText>
-      </View>
-
-      {splitees.map((splitee, _) => (
-        <View
-          key={splitee.id}
-          style={{ flexDirection: "row", justifyContent: "space-between" }}
-        >
-          <StyledText>{splitee.name}</StyledText>
-          <StyledText>$ {(costsByUser[splitee.id] ?? 0).toFixed(2)}</StyledText>
-        </View>
-      ))}
 
       <View style={{ marginTop: "auto" }}>
         <WideButton
@@ -168,11 +163,7 @@ export default function AssignItemsScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+  header: {},
   userChipsContainer: {
     paddingTop: 10,
     paddingBottom: 15,

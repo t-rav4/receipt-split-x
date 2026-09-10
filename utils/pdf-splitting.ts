@@ -1,4 +1,5 @@
 import * as Crypto from "expo-crypto";
+import { convertToPascalCase } from "./format-text";
 
 export type ReceiptItem = {
   id: string;
@@ -98,7 +99,7 @@ export function extractReceiptItems(text: string) {
 
     items.push({
       id: Crypto.randomUUID(),
-      name,
+      name: convertToPascalCase(name),
       originalPrice: price,
       finalPrice,
       assignedUserIds: new Set(),

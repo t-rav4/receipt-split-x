@@ -26,7 +26,7 @@ export function ScreenLayout({
         <View style={styles.headerSide}>
           {showBackButton && (
             <TouchableOpacity onPress={back}>
-              <Ionicons name="arrow-back" color="white" size={32} />
+              <Ionicons name="arrow-back" color="white" size={26} />
             </TouchableOpacity>
           )}
         </View>
@@ -48,7 +48,6 @@ export function ScreenLayout({
 const styles = StyleSheet.create({
   layout: {
     flex: 1,
-    paddingTop: 10,
     paddingBottom: 20,
     paddingHorizontal: 18,
     gap: 10,
@@ -69,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     color: "white",
     fontWeight: "bold",
     paddingVertical: 10,

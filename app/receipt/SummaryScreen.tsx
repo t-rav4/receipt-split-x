@@ -13,7 +13,8 @@ import { FlatList, StyleSheet, View } from "react-native";
 export default function SummaryScreen() {
   const router = useRouter();
   const { users } = useUserContext();
-  const { spliteeIds, receiptItems, costsByUser } = useReceiptContext();
+  const { spliteeIds, receiptItems, costsByUser, totalCost } =
+    useReceiptContext();
 
   const splitees = users.filter((u) => spliteeIds.has(u.id));
 
@@ -77,9 +78,6 @@ export default function SummaryScreen() {
     );
   };
 
-  const totalAmount = receiptItems
-    .reduce((acc, item) => acc + item.finalPrice, 0)
-    .toFixed(2);
   const numberOfSplitees = spliteeIds.size;
 
   return (
@@ -87,7 +85,7 @@ export default function SummaryScreen() {
       <View style={styles.header}>
         <Ionicons name="receipt" color="white" size={48} />
         <StyledText>Total amount</StyledText>
-        <StyledText>$ {totalAmount}</StyledText>
+        <StyledText>$ {totalCost.toFixed(2)}</StyledText>
         <StyledText>Split between {numberOfSplitees} people</StyledText>
       </View>
 
