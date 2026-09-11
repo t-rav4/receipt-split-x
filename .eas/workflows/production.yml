@@ -1,0 +1,67 @@
+name: Production
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Lint
+    type: custom
+    steps:
+      - uses: eas/checkout
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+  test:
+    name: Tests
+    type: custom
+    steps:
+      - uses: eas/checkout
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --runInBand --passWithNoTests
+
+  fingerprint:
+    name: Fingerprint
+    type: fingerprint
+    environment: production
+
+  get_android_build:
+    name: Check for existing Android build
+    needs:
+      - lint
+      - test
+      - fingerprint
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: production
+
+  build_android:
+    name: Build Android
+    needs:
+      - get_android_build
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: production
+
+  publish_android_update:
+    name: Publish Android update
+    needs:
+      - get_android_build
+    if: ${{ needs.get_android_build.outputs.build_id }}
+    type: update
+    params:
+      channel: production
+      platform: android

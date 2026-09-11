@@ -5,15 +5,15 @@ import { ReceiptProvider } from "../context/ReceiptContext";
 
 export default function RootLayout() {
   return (
-    <ReceiptProvider>
-      <UserProvider>
+    <UserProvider>
+      <ReceiptProvider>
         <Stack
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: colours.background },
           }}
         />
-      </UserProvider>
-    </ReceiptProvider>
+      </ReceiptProvider>
+    </UserProvider>
   );
 }

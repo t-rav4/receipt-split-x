@@ -23,17 +23,21 @@ export function ScreenLayout({
   return (
     <SafeAreaView style={[styles.layout, viewStyle]}>
       <View style={styles.header}>
-        {showBackButton && (
-          <TouchableOpacity onPress={back}>
-            <Ionicons name="arrow-back" color="white" size={32} />
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerSide}>
+          {showBackButton && (
+            <TouchableOpacity onPress={back}>
+              <Ionicons name="arrow-back" color="white" size={26} />
+            </TouchableOpacity>
+          )}
+        </View>
 
-        {title && <StyledText style={styles.title}>{title}</StyledText>}
+        <View style={styles.headerCenter}>
+          {title && <StyledText style={styles.title}>{title}</StyledText>}
+        </View>
 
-        {rightComponent && (
-          <View style={{ marginLeft: "auto" }}>{rightComponent}</View>
-        )}
+        <View style={[styles.headerSide, styles.headerRight]}>
+          {rightComponent}
+        </View>
       </View>
 
       {children}
@@ -44,7 +48,6 @@ export function ScreenLayout({
 const styles = StyleSheet.create({
   layout: {
     flex: 1,
-    paddingTop: 10,
     paddingBottom: 20,
     paddingHorizontal: 18,
     gap: 10,
@@ -53,10 +56,19 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+  },
+  headerSide: {
+    flex: 1,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: "center",
+  },
+  headerRight: {
+    alignItems: "flex-end",
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     color: "white",
     fontWeight: "bold",
     paddingVertical: 10,

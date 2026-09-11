@@ -6,8 +6,8 @@ import { TileButton } from "../../components/shared/TileButton";
 import { useReceiptContext } from "../../context/ReceiptContext";
 
 export default function SelectSourceScreen() {
-  const { setSelectedFile } = useReceiptContext();
   const router = useRouter();
+  const { setSelectedFile } = useReceiptContext();
 
   const handleSelectFile = async () => {
     const result = await getDocumentAsync({ type: "application/pdf" });

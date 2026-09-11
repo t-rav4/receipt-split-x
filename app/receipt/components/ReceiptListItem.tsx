@@ -1,14 +1,15 @@
 import StyledText from "@/components/shared/StyledText";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { User } from "@/types/user";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { ReactNode } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface ReceiptListItemProps {
   name: string;
   price: number;
-  onPress?: () => void;
   assignedUsers?: User[];
-  showEditActions?: boolean;
+  onPress?: () => void;
+  actions?: ReactNode;
 }
 
 export function ReceiptListItem({
@@ -16,7 +17,7 @@ export function ReceiptListItem({
   price,
   onPress,
   assignedUsers,
-  showEditActions = false,
+  actions,
 }: ReceiptListItemProps) {
   return (
     <TouchableOpacity key={name} style={styles.container} onPress={onPress}>
@@ -32,33 +33,14 @@ export function ReceiptListItem({
         {/* Assigned Users */}
         {assignedUsers && assignedUsers?.length > 0 && (
           <View style={{ paddingTop: 8, flexDirection: "row", gap: 4 }}>
-            {assignedUsers?.map((user) => (
-              <View
-                key={user.id}
-                style={[styles.userAvatar, { backgroundColor: user.colour }]}
-              />
+            {assignedUsers?.map(({ id, name, colour }) => (
+              <UserAvatar key={id} name={name} colour={colour} size={24} />
             ))}
           </View>
         )}
       </View>
 
-      {showEditActions && (
-        <View
-          style={{
-            gap: 10,
-            flexDirection: "row",
-          }}
-        >
-          {/* TODO: determine best how to implement the edit & remove here */}
-          <TouchableOpacity onPress={() => {}}>
-            <Ionicons name="pencil-outline" color="white" size={20} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => {}}>
-            <Ionicons name="trash" color="salmon" size={20} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {actions && actions}
     </TouchableOpacity>
   );
 }
@@ -81,11 +63,5 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 16,
-  },
-
-  userAvatar: {
-    borderRadius: 100,
-    width: 20,
-    height: 20,
   },
 });

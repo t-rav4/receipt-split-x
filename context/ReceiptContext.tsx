@@ -1,91 +1,161 @@
-import { User } from "@/types/user";
+import { calculateCostsByUser } from "@/utils/calculate-costs-by-user";
 import { extractReceiptItems, ReceiptItem } from "@/utils/pdf-splitting";
 import { extractText, isAvailable } from "expo-pdf-text-extract";
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface ReceiptContextType {
-  selectedFile: string | null;
-  setSelectedFile: (file: string | null) => void;
+	spliteeIds: Set<string>;
+	addSplitee: (userId: string) => void;
+	removeSplitee: (userId: string) => void;
 
-  // Receipt items extracted from the PDF + raw extracted text
-  rawExtractedText?: string;
+	selectedFile: string | null;
+	setSelectedFile: (file: string | null) => void;
 
-  receiptItems: ReceiptItem[];
-  setReceiptItems: React.Dispatch<React.SetStateAction<ReceiptItem[]>>;
-  assignUserToItem: (user: User, item: ReceiptItem) => void;
+	// Receipt items extracted from the PDF + raw extracted text
+	rawExtractedText?: string;
 
-  extractItemsFromPdf: (pdfUri: string) => Promise<void>;
+	receiptItems: ReceiptItem[];
+	updateItemById: (id: string, updatedItem: Partial<ReceiptItem>) => void;
+	deleteItemById: (id: string) => void;
+
+	setReceiptItems: React.Dispatch<React.SetStateAction<ReceiptItem[]>>;
+	assignUserToItem: (userId: string, item: ReceiptItem) => void;
+	unassignUserFromAnyItems: (userId: string) => void;
+
+	costsByUser: Record<string, number>; // e.g { '1234': 12.00 } where { 'userId': 'totalCostOwed' }
+	totalCost: number;
+
+	extractItemsFromPdf: (pdfUri: string) => Promise<void>;
 }
 
 const ReceiptContext = createContext<ReceiptContextType | undefined>(undefined);
 
 export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+	const [spliteeIds, setSpliteeIds] = useState<Set<string>>(new Set());
+	const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
-  const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
-  const [rawExtractedText, setRawExtractedText] = useState<string>("");
+	const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
+	const [rawExtractedText, setRawExtractedText] = useState<string>("");
 
-  async function extractItemsFromPdf(pdfUri: string) {
-    if (!isAvailable()) {
-      console.warn("PDF text extraction is not available on this platform.");
-      return;
-    }
-    const text = await extractText(pdfUri);
-    setRawExtractedText(text);
+	async function extractItemsFromPdf(pdfUri: string) {
+		if (!isAvailable()) {
+			console.warn("PDF text extraction is not available on this platform.");
+			return;
+		}
+		const text = await extractText(pdfUri);
+		setRawExtractedText(text);
 
-    const processedText = extractReceiptItems(text);
-    setReceiptItems(processedText);
-  }
+		const processedText = extractReceiptItems(text);
+		setReceiptItems(processedText);
+	}
 
-  function assignUserToItem(user: User, item: ReceiptItem) {
-    const updatedItems = receiptItems.map((receiptItem) => {
-      if (receiptItem.name !== item.name) return receiptItem;
+	useEffect(() => {
+		if (selectedFile) {
+			extractItemsFromPdf(selectedFile);
+		}
+	}, [selectedFile]);
 
-      // Toggle the user between assigned and unassigned
-      const updatedAssignedUsers = receiptItem.assignedUsers
-        ? [...receiptItem.assignedUsers]
-        : [];
+	function addSplitee(userId: string) {
+		setSpliteeIds((prev) => new Set(prev).add(userId));
+	}
 
-      const userIndex = updatedAssignedUsers.findIndex(
-        (assignedUser) => assignedUser.id === user.id,
-      );
+	function removeSplitee(userId: string) {
+		const newSet = new Set(spliteeIds);
+		newSet.delete(userId);
+		setSpliteeIds(newSet);
+	}
 
-      if (userIndex !== -1) {
-        // Remove user if already assigned
-        updatedAssignedUsers.splice(userIndex, 1);
-      } else {
-        // Add user if not already assigned
-        updatedAssignedUsers.push(user);
-      }
+	function unassignUserFromAnyItems(userId: string) {
+		const updated = receiptItems.map((item) => {
+			if (item.assignedUserIds.has(userId)) {
+				const updatedAssignedUserIds = new Set(item.assignedUserIds);
+				updatedAssignedUserIds.delete(userId);
+				return { ...item, assignedUserIds: updatedAssignedUserIds };
+			}
 
-      return { ...receiptItem, assignedUsers: updatedAssignedUsers };
-    });
+			return item;
+		});
 
-    setReceiptItems(updatedItems);
-  }
+		setReceiptItems(updated);
+	}
 
-  return (
-    <ReceiptContext.Provider
-      value={{
-        selectedFile,
-        setSelectedFile,
-        receiptItems,
-        assignUserToItem,
+	function assignUserToItem(userId: string, assignedItem: ReceiptItem) {
+		const updatedItems = receiptItems.map((item) => {
+			if (item.id !== assignedItem.id) {
+				return item;
+			}
 
-        setReceiptItems,
-        rawExtractedText,
-        extractItemsFromPdf,
-      }}
-    >
-      {children}
-    </ReceiptContext.Provider>
-  );
+			const updatedAssignedUserIds = new Set(item.assignedUserIds);
+
+			if (item.assignedUserIds.has(userId)) {
+				updatedAssignedUserIds.delete(userId);
+			} else {
+				updatedAssignedUserIds.add(userId);
+			}
+
+			return { ...item, assignedUserIds: updatedAssignedUserIds };
+		});
+
+		setReceiptItems(updatedItems);
+	}
+
+	function updateItemById(id: string, updatedItem: Partial<ReceiptItem>) {
+		setReceiptItems((items) =>
+			items.map((item) =>
+				item.id === id ? { ...item, ...updatedItem } : item,
+			),
+		);
+	}
+
+	function deleteItemById(id: string) {
+		setReceiptItems((items) => items.filter((item) => item.id !== id));
+	}
+
+	const costsByUser = calculateCostsByUser(receiptItems, spliteeIds);
+	const totalCost = receiptItems.reduce(
+		(total, item) => total + item.finalPrice,
+		0,
+	);
+
+	return (
+		<ReceiptContext.Provider
+			value={{
+				spliteeIds,
+				addSplitee,
+				removeSplitee,
+
+				selectedFile,
+				setSelectedFile,
+				assignUserToItem,
+				unassignUserFromAnyItems,
+
+				receiptItems,
+				setReceiptItems,
+				updateItemById,
+				deleteItemById,
+
+				costsByUser,
+				totalCost,
+
+				rawExtractedText,
+				extractItemsFromPdf,
+			}}
+		>
+			{children}
+		</ReceiptContext.Provider>
+	);
 };
 
 export const useReceiptContext = () => {
-  const context = useContext(ReceiptContext);
-  if (!context) {
-    throw new Error("useReceiptContext must be used within a ReceiptProvider");
-  }
-  return context;
+	const context = useContext(ReceiptContext);
+	if (!context) {
+		throw new Error("useReceiptContext must be used within a ReceiptProvider");
+	}
+	return context;
 };

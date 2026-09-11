@@ -1,5 +1,6 @@
 import { User } from "@/types/user";
 import { deleteUserById, getUsers, saveUsers } from "@/utils/user";
+import * as Crypto from "expo-crypto";
 import { createContext, useContext, useEffect, useState } from "react";
 
 interface UserContextType {
@@ -35,8 +36,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const randomColour = `#${Math.floor(Math.random() * 0xffffff)
       .toString(16)
       .padStart(6, "0")}`;
+
     const newUser: User = {
-      id: Date.now().toString(), // TODO: replace with UUID or some other unique identifier
+      id: Crypto.randomUUID(),
       name,
       colour: randomColour,
     };

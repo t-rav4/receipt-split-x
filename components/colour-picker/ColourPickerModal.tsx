@@ -1,8 +1,8 @@
 import { colours } from "@/constants/colours";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useEffect, useState } from "react";
-import { Modal, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import ColorPicker from "react-native-wheel-color-picker";
+import { RSModal } from "../shared/RSModal";
 import StyledText from "../shared/StyledText";
 
 interface ColourPickerModalProps {
@@ -18,75 +18,55 @@ export function ColourPickerModal({
   onSelect,
   onClose,
 }: ColourPickerModalProps) {
-  const [pickerColour, setPickerColour] = useState(currentColour || "#000000");
+  const pickerColour = useRef(currentColour || "#000000");
+  const [pickerKey, setPickerKey] = useState(0);
 
   useEffect(() => {
-    if (currentColour) {
-      setPickerColour(currentColour);
+    if (visible) {
+      pickerColour.current = currentColour || "#000000";
+      setPickerKey((key) => key + 1);
     }
-  }, [currentColour]);
+  }, [visible, currentColour]);
+
+  const handleColourChange = (colour: string) => {
+    pickerColour.current = colour;
+  };
+
+  const handleConfirm = () => {
+    onSelect(pickerColour.current);
+  };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modal}>
-          <TouchableOpacity style={{ alignSelf: "flex-end" }} onPress={onClose}>
-            <Ionicons name="close" size={24} color={colours.text} />
-          </TouchableOpacity>
-
-          <View style={styles.colourPickerContainer}>
-            <ColorPicker
-              color={pickerColour}
-              onColorChange={(colour) => setPickerColour(colour)}
-              thumbSize={30}
-              sliderSize={28}
-              noSnap
-            />
-          </View>
-
-          <View style={styles.actions}>
-            <TouchableOpacity
-              onPress={onClose}
-              style={[styles.button, { backgroundColor: colours.secondary }]}
-            >
-              <StyledText style={[styles.btnLabel, {}]}>Cancel</StyledText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => onSelect(pickerColour)}
-              style={[styles.button]}
-            >
-              <StyledText style={styles.btnLabel}>Confirm</StyledText>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <RSModal visible={visible} onClose={onClose}>
+      <View style={styles.colourPickerContainer}>
+        <ColorPicker
+          key={pickerKey}
+          color={pickerColour.current}
+          onColorChange={handleColourChange}
+          thumbSize={30}
+          sliderSize={28}
+          shadeSliderThumb
+          noSnap
+        />
       </View>
-    </Modal>
+
+      <View style={styles.actions}>
+        <TouchableOpacity
+          onPress={onClose}
+          style={[styles.button, { backgroundColor: colours.secondary }]}
+        >
+          <StyledText style={[styles.btnLabel, {}]}>Cancel</StyledText>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleConfirm} style={[styles.button]}>
+          <StyledText style={styles.btnLabel}>Confirm</StyledText>
+        </TouchableOpacity>
+      </View>
+    </RSModal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-
-  modal: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: colours.surfaceElevated,
-    padding: 10,
-    borderRadius: 10,
-  },
-
   colourPickerContainer: {
     height: 320,
   },

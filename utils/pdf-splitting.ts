@@ -1,10 +1,12 @@
-import { User } from "@/types/user";
+import * as Crypto from "expo-crypto";
+import { convertToPascalCase } from "./format-text";
 
 export type ReceiptItem = {
+  id: string;
   name: string;
   originalPrice: number;
   finalPrice: number;
-  assignedUsers: User[];
+  assignedUserIds: Set<string>;
 };
 
 export function extractReceiptItems(text: string) {
@@ -46,6 +48,10 @@ export function extractReceiptItems(text: string) {
       upperName.startsWith("EFT") ||
       upperName.startsWith("PURCHASE") ||
       upperName.startsWith("RRN") ||
+      upperName.includes("SUBTOTAL") ||
+      upperName.startsWith("CHANGE") ||
+      upperName.startsWith("YOU SAVED") ||
+      /^X-\d+$/.test(upperName) ||
       upperName.includes("AUD$")
     ) {
       continue;
@@ -63,11 +69,18 @@ export function extractReceiptItems(text: string) {
         .trim();
 
       // Search backwards for matching item
+      let matchedItem = false;
       for (let j = items.length - 1; j >= 0; j--) {
         if (items[j].name.includes(discountBaseName)) {
           items[j].finalPrice += price; // subtract discount
+          matchedItem = true;
           break;
         }
+      }
+
+      // Fall back to the preceding item when an "X FOR $Y" discount cannot be matched by product name.
+      if (!matchedItem && /\b\d+\s+FOR\s+\$?\d+(?:\.\d{2})?\b/i.test(name)) {
+        items[items.length - 1].finalPrice += price;
       }
 
       continue;
@@ -85,10 +98,11 @@ export function extractReceiptItems(text: string) {
     }
 
     items.push({
-      name,
+      id: Crypto.randomUUID(),
+      name: convertToPascalCase(name),
       originalPrice: price,
       finalPrice,
-      assignedUsers: [],
+      assignedUserIds: new Set(),
     });
   }
 
